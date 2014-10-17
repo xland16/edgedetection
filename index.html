@@ -1,0 +1,337 @@
+<title>Computer Vision Homework #1 -- Tom Crossland</title>
+<center><h1>CS 4501: Computer Vision<br>Homework Assignment #1</h1>
+<h2>Tom Crossland (tcc4dr)</h2><br><br></center>
+<h2>Canny Edge Detector</h2>
+
+My Canny Edge Detecter is written as the program edge.m.
+edge takes in four arguments: file, sigma, T_h, T_l.
+File is the file name of the image being processed.
+Currently, the program is more tailored to work with .jpg images.
+This is solely because of generating names of the various output images written by the program.
+The program could be altered to accept a various amount of other image files if needed.
+Sigma is the width of the Gaussian blur being used.
+For reasons to be discussed later, I assume that sigma would be a number greater than or equal to zero.
+T_h is the high threshold used for determining edge pixels, while T_l is the low threshold. 
+I assume that T_h >= T_l due to normal conventions.
+<br><br>
+My gradient filter size is based off of the sigma value inputted.
+After researching online and consulting some members of the class, I made the filter size be the rounded sigma value multiplied by 6.
+If this number was even, I added one to it to make it odd.
+This allowed me to centralize the Gaussian filter so the values x=0,y=0 passed into the derivative of the 
+Gaussian filter to be at its central element.
+Convolution was then performed on to get the gradients in the x and y directions.
+conv2 with the same tag was used due to its ease of implementation and to ensure that the resulting gradients
+would be the same size as the original image.
+<br><br>
+For finding the edge orientation at each pixel, I used arctan offset the value by 90 degrees due to the range arctan returns on Matlab.
+When performing nonmaximum surpression, I created a new matrix, the same size as the original image.
+Surpressed pixels had a value of 0 in that pixel's element in the new matrix while nonsurpressed pixels had the same
+value as their edge strength in the new matrix.
+When doing hysteresis, if the given pixel has an edge strength higher than a T_h, I added it to a list to be chained.
+This list was implemented by using a vector with added length when needed do to ease of implementation.
+When going along the "chains," I could easily add a pixel to the list to be chained and mark the node as "visited" in a new matrix.
+I assumed this "visited" matrix would be analogous to the final edge detected image; any pixel visited would be an edge and white.
+while any pixel not "visited" in this sense would be black and not an edge.
+The following are example images used as input and created as output.
+
+<br><br> 
+<h2>mandrill.jpg</h2>
+<img src="mandrill.jpg"></img><br><br>
+<h3>Input Values: sigma = 2, T_h = .005, T_l = .001</h3>
+Smoothed Horizontal Gradient<br>
+<img src="mandrill-edge-2-0.005-0.001-fgy.jpg"></img><br><br>
+Smoothed Vertical Gradient<br>
+<img src="mandrill-edge-2-0.005-0.001-fgx.jpg"></img><br><br>
+Gradient Magnitude<br>
+<img src="mandrill-edge-2-0.005-0.001-fgm.jpg"></img><br><br>
+Gradient Magnitude after Nonmaximal Suppression<br>
+<img src="mandrill-edge-2-0.005-0.001-nms.jpg"></img><br><br>
+Image after Hysteresis<br>
+<img src="mandrill-edge-2-0.005-0.001-hyst.jpg"></img><br><br>
+
+<h3>Input Values: sigma = 5, T_h = .005, T_l = .001</h3>
+Smoothed Horizontal Gradient<br>
+<img src="mandrill-edge-5-0.005-0.001-fgy.jpg"></img><br><br>
+Smoothed Vertical Gradient<br>
+<img src="mandrill-edge-5-0.005-0.001-fgx.jpg"></img><br><br>
+Gradient Magnitude<br>
+<img src="mandrill-edge-5-0.005-0.001-fgm.jpg"></img><br><br>
+Gradient Magnitude after Nonmaximal Suppression<br>
+<img src="mandrill-edge-5-0.005-0.001-nms.jpg"></img><br><br>
+Image after Hysteresis<br>
+<img src="mandrill-edge-5-0.005-0.001-hyst.jpg"></img><br><br>
+
+<h3>Input Values: sigma = 5, T_h = .01, T_l = .001</h3>
+Smoothed Horizontal Gradient<br>
+<img src="mandrill-edge-5-0.01-0.001-fgy.jpg"></img><br><br>
+Smoothed Vertical Gradient<br>
+<img src="mandrill-edge-5-0.01-0.001-fgx.jpg"></img><br><br>
+Gradient Magnitude<br>
+<img src="mandrill-edge-5-0.01-0.001-fgm.jpg"></img><br><br>
+Gradient Magnitude after Nonmaximal Suppression<br>
+<img src="mandrill-edge-5-0.01-0.001-nms.jpg"></img><br><br>
+Image after Hysteresis<br>
+<img src="mandrill-edge-5-0.01-0.001-hyst.jpg"></img><br><br>
+
+<h3>Input Values: sigma = 5, T_h = .01, T_l = .005</h3>
+Smoothed Horizontal Gradient<br>
+<img src="mandrill-edge-5-0.01-0.005-fgy.jpg"></img><br><br>
+Smoothed Vertical Gradient<br>
+<img src="mandrill-edge-5-0.01-0.005-fgx.jpg"></img><br><br>
+Gradient Magnitude<br>
+<img src="mandrill-edge-5-0.01-0.005-fgm.jpg"></img><br><br>
+Gradient Magnitude after Nonmaximal Suppression<br>
+<img src="mandrill-edge-5-0.01-0.005-nms.jpg"></img><br><br>
+Image after Hysteresis<br>
+<img src="mandrill-edge-5-0.01-0.005-hyst.jpg"></img><br><br>
+
+Changing the sigma value had a noticeable effect on edge detection as seen in the Mandrill example.
+When sigma was low, there was less blurring of the image.  When sigma was high, the inverse was true.
+A low sigma value such as 2 on the mandrill did not blur away the hair lines around the animal's face.
+Therefore, the program detected lots of edges in the mandrill's fur with a sigma value of 2.  A sigma
+value of 5 blurred the hair lines, causing the program to not detect as many edges in the animal's fur.
+In addition, the thresholds had a noticeable impact on the final image.  Maintaining a constant blur of
+sigma value 5, I altered the threshold levels.
+A smaller low threshold (like .001) allowed weaker edges to be detected, as seen above.
+A larger high threshold (like .01) allowed weaker edges to not be as easily detected, as seen above.
+
+<br><br> 
+<h2>building.jpg</h2>
+<img src="building.jpg"></img><br><br>
+<h3>Input Values: sigma = 2, T_h = .005, T_l = .001</h3>
+Smoothed Horizontal Gradient<br>
+<img src="building-edge-2-0.005-0.001-fgy.jpg"></img><br><br>
+Smoothed Vertical Gradient<br>
+<img src="building-edge-2-0.005-0.001-fgx.jpg"></img><br><br>
+Gradient Magnitude<br>
+<img src="building-edge-2-0.005-0.001-fgm.jpg"></img><br><br>
+Gradient Magnitude after Nonmaximal Suppression<br>
+<img src="building-edge-2-0.005-0.001-nms.jpg"></img><br><br>
+Image after Hysteresis<br>
+<img src="building-edge-2-0.005-0.001-hyst.jpg"></img><br><br>
+
+<h3>Input Values: sigma = 3, T_h = .005, T_l = .001</h3>
+Smoothed Horizontal Gradient<br>
+<img src="building-edge-3-0.005-0.001-fgy.jpg"></img><br><br>
+Smoothed Vertical Gradient<br>
+<img src="building-edge-3-0.005-0.001-fgx.jpg"></img><br><br>
+Gradient Magnitude<br>
+<img src="building-edge-3-0.005-0.001-fgm.jpg"></img><br><br>
+Gradient Magnitude after Nonmaximal Suppression<br>
+<img src="building-edge-3-0.005-0.001-nms.jpg"></img><br><br>
+Image after Hysteresis<br>
+<img src="building-edge-3-0.005-0.001-hyst.jpg"></img><br><br>
+
+<h3>Input Values: sigma = 6, T_h = .005, T_l = .001</h3>
+Smoothed Horizontal Gradient<br>
+<img src="building-edge-6-0.005-0.001-fgy.jpg"></img><br><br>
+Smoothed Vertical Gradient<br>
+<img src="building-edge-6-0.005-0.001-fgx.jpg"></img><br><br>
+Gradient Magnitude<br>
+<img src="building-edge-6-0.005-0.001-fgm.jpg"></img><br><br>
+Gradient Magnitude after Nonmaximal Suppression<br>
+<img src="building-edge-6-0.005-0.001-nms.jpg"></img><br><br>
+Image after Hysteresis<br>
+<img src="building-edge-6-0.005-0.001-hyst.jpg"></img><br><br>
+
+Changing the sigma value altered the amount of edges detected in the building picture.
+The higher the sigma value was, the more blur there was.
+This added blur smoothed over possible pixels that might otherwise be deemed an edge.
+For example, a sigma value of 2 caused many of the edges of the bricks in the building to be detected.
+A sigma value of 3 showed a decrease in this detection.
+A sigma value of 6 caused an image so blurred that little to no brick edges were detected.
+
+<br><br>
+<h2>starry.jpg</h2>
+<img src="starry.jpg"></img><br><br>
+<h3>Input Values: sigma = 2, T_h = .005, T_l = .001</h3>
+Smoothed Horizontal Gradient<br>
+<img src="starry-edge-2-0.005-0.001-fgy.jpg"></img><br><br>
+Smoothed Vertical Gradient<br>
+<img src="starry-edge-2-0.005-0.001-fgx.jpg"></img><br><br>
+Gradient Magnitude<br>
+<img src="starry-edge-2-0.005-0.001-fgm.jpg"></img><br><br>
+Gradient Magnitude after Nonmaximal Suppression<br>
+<img src="starry-edge-2-0.005-0.001-nms.jpg"></img><br><br>
+Image after Hysteresis<br>
+<img src="starry-edge-2-0.005-0.001-hyst.jpg"></img><br><br>
+
+<h3>Input Values: sigma = 5, T_h = .005, T_l = .001</h3>
+Smoothed Horizontal Gradient<br>
+<img src="starry-edge-5-0.005-0.001-fgy.jpg"></img><br><br>
+Smoothed Vertical Gradient<br>
+<img src="starry-edge-5-0.005-0.001-fgx.jpg"></img><br><br>
+Gradient Magnitude<br>
+<img src="starry-edge-5-0.005-0.001-fgm.jpg"></img><br><br>
+Gradient Magnitude after Nonmaximal Suppression<br>
+<img src="starry-edge-5-0.005-0.001-nms.jpg"></img><br><br>
+Image after Hysteresis<br>
+<img src="starry-edge-5-0.005-0.001-hyst.jpg"></img><br><br>
+
+The effects of sigma can again be seen here.
+A higher sigma value blurs the brushstrokes of the painting.
+This causes less edges to be detected.
+A lower sigma does not blur the brushstrokes, causing more edges to be detected.
+
+<br><br>
+<h2>bieber.jpg</h2>
+<img src="bieber.jpg"></img><br><br>
+<h3>Input Values: sigma = 2, T_h = .005, T_l = .001</h3>
+Smoothed Horizontal Gradient<br>
+<img src="bieber-edge-2-0.005-0.001-fgy.jpg"></img><br><br>
+Smoothed Vertical Gradient<br>
+<img src="bieber-edge-2-0.005-0.001-fgx.jpg"></img><br><br>
+Gradient Magnitude<br>
+<img src="bieber-edge-2-0.005-0.001-fgm.jpg"></img><br><br>
+Gradient Magnitude after Nonmaximal Suppression<br>
+<img src="bieber-edge-2-0.005-0.001-nms.jpg"></img><br><br>
+Image after Hysteresis<br>
+<img src="bieber-edge-2-0.005-0.001-hyst.jpg"></img><br><br>
+
+<h3>Input Values: sigma = 3, T_h = .005, T_l = .001</h3>
+Smoothed Horizontal Gradient<br>
+<img src="bieber-edge-3-0.005-0.001-fgy.jpg"></img><br><br>
+Smoothed Vertical Gradient<br>
+<img src="bieber-edge-3-0.005-0.001-fgx.jpg"></img><br><br>
+Gradient Magnitude<br>
+<img src="bieber-edge-3-0.005-0.001-fgm.jpg"></img><br><br>
+Gradient Magnitude after Nonmaximal Suppression<br>
+<img src="bieber-edge-3-0.005-0.001-nms.jpg"></img><br><br>
+Image after Hysteresis<br>
+<img src="bieber-edge-3-0.005-0.001-hyst.jpg"></img><br><br>
+
+This is another example of how changing the blur amount affects the detected edges.
+<br><br>
+
+<h2>Corner Detector</h2>
+
+My Corner Detecter is written as the program corner.m.
+edge takes in four arguments: file, sigma, nsize, T.
+File is the file name of the image being processed.
+Currently, the program is more tailored to work with .jpg images.
+This is solely because of generating names of the various output images written by the program.
+The program could be altered to accept a various amount of other image files if needed.
+Sigma is the width of the Gaussian blur being used.
+For reasons to be discussed later, I assume that sigma would be a number greater than or equal to zero.
+nsize is the size of the neighborhood window used when considering corner pixels.
+By standard conventions, I assume the neighborhood size is a postive integer since it represents an amount of pixels.
+T is the threshold used for determining whether a pixel's neighborhood's covariance matrix has two large eigenvalues, indicating that pixel is a corner.
+<br><br>
+My gradient filter size is based off of the sigma value inputted.
+After researching online and consulting some members of the class, I made the filter size be the rounded sigma value multiplied by 6.
+If this number was even, I added one to it to make it odd.
+This allowed me to centralize the Gaussian filter so the values x=0,y=0 passed into the derivative of the 
+Gaussian filter to be at its central element.
+Convolution was then performed on to get the gradients in the x and y directions.
+conv2 with the same tag was used due to its ease of implementation and to ensure that the resulting gradients
+would be the same size as the original image.
+<br><br>
+When storing the minimum eigenvalues for a pixel's neighborhood's covariance matrix, I decided to make a three dimensional matrix.
+The first two dimensions stored the cartesian point location of the pixel.
+The third dimension had two elements for each pixel location.
+One field stored the minimum eigenvalue.  The other stored whether or not that pixel was a possible corner pixel.
+On a copy of the original image, I changed every possible corner pixel to be red.
+I chose not to implement a list in my final design to store this data due to time issues.  Originally, I had
+the possible corners in a list.  While this saved space, it took a vast amount of time to detect corners.
+Finding corners with the building picture would take about 13 minutes.  With a matrix using greater memory, that time
+was reduced to under 45 seconds.  Instead of sorting a list and comparing the positions of the eigenvalues of the pixel in question and 
+a pixel in its neighborhood in said list, I did comparison by lookup in my three-dimensional matrix.
+If a corner pixel was to be suppressed, I updated that in constant time updating the matrix values.
+I then could find all corner values after this suppression process based on their values in position 2 of the third dimension of the matrix.
+I drew a box the size of the neighborhood around every nonsuppressed corner pixel in the image.
+The following are example images used as input and created as output.
+
+<br><br> 
+<h2>building.jpg</h2>
+<img src="building.jpg"></img><br><br>
+<h3>Input Values: sigma = 1, nsize = 10, T = .1</h3>
+Smoothed Horizontal Gradient<br>
+<img src="building-corner-1-10-0.1-fgy.jpg"></img><br><br>
+Smoothed Vertical Gradient<br>
+<img src="building-corner-1-10-0.1-fgx.jpg"></img><br><br>
+Gradient Magnitude<br>
+<img src="building-corner-1-10-0.1-fgm.jpg"></img><br><br>
+Finding Corners<br>
+<img src="building-corner-1-10-0.1-fc.jpg"></img><br><br>
+Nonmaximal Surpression<br>
+<img src="building-corner-1-10-0.1-nms.jpg"></img><br><br>
+
+<h3>Input Values: sigma = 2, nsize = 10, T = .1</h3>
+Smoothed Horizontal Gradient<br>
+<img src="building-corner-2-10-0.1-fgy.jpg"></img><br><br>
+Smoothed Vertical Gradient<br>
+<img src="building-corner-2-10-0.1-fgx.jpg"></img><br><br>
+Gradient Magnitude<br>
+<img src="building-corner-2-10-0.1-fgm.jpg"></img><br><br>
+Finding Corners<br>
+<img src="building-corner-2-10-0.1-fc.jpg"></img><br><br>
+Nonmaximal Surpression<br>
+<img src="building-corner-2-10-0.1-nms.jpg"></img><br><br>
+
+<h3>Input Values: sigma = 2, nsize = 10, T = .05</h3>
+Smoothed Horizontal Gradient<br>
+<img src="building-corner-2-10-0.05-fgy.jpg"></img><br><br>
+Smoothed Vertical Gradient<br>
+<img src="building-corner-2-10-0.05-fgx.jpg"></img><br><br>
+Gradient Magnitude<br>
+<img src="building-corner-2-10-0.05-fgm.jpg"></img><br><br>
+Finding Corners<br>
+<img src="building-corner-2-10-0.05-fc.jpg"></img><br><br>
+Nonmaximal Surpression<br>
+<img src="building-corner-2-10-0.05-nms.jpg"></img><br><br>
+
+Using the building picture as an example, I saw how sigma values can affect corner detection.
+The higher the sigma value is, the more blurry the image becomes.
+This will smooth over some pixels, making them less detectable as a corner.
+With a sigma value of 1, many of the corners of the bricks can be detected.  However, a sigma value of 2
+will lead to a decrease in the amount of brick corners detected due to them being smoothed over.
+In addition, the smaller the threshold is, the more possible corner pixels there are.
+One can observe the difference in amount of pixel corners found when using a threshold of 0.1 compared to 0.05.
+
+<br><br>
+<h2>checker.jpg</h2>
+<img src="checker.jpg"></img><br><br>
+<h3>Input Values: sigma = 1, nsize = 10, T = 0.3</h3>
+Smoothed Horizontal Gradient<br>
+<img src="checker-corner-1-10-0.3-fgy.jpg"></img><br><br>
+Smoothed Vertical Gradient<br>
+<img src="checker-corner-1-10-0.3-fgx.jpg"></img><br><br>
+Gradient Magnitude<br>
+<img src="checker-corner-1-10-0.3-fgm.jpg"></img><br><br>
+Finding Corners<br>
+<img src="checker-corner-1-10-0.3-fc.jpg"></img><br><br>
+Nonmaximal Surpression<br>
+<img src="checker-corner-1-10-0.3-nms.jpg"></img><br><br>
+
+<h3>Input Values: sigma = 1, nsize = 12, T = 0.4</h3>
+Smoothed Horizontal Gradient<br>
+<img src="checker-corner-1-12-0.4-fgy.jpg"></img><br><br>
+Smoothed Vertical Gradient<br>
+<img src="checker-corner-1-12-0.4-fgx.jpg"></img><br><br>
+Gradient Magnitude<br>
+<img src="checker-corner-1-12-0.4-fgm.jpg"></img><br><br>
+Finding Corners<br>
+<img src="checker-corner-1-12-0.4-fc.jpg"></img><br><br>
+Nonmaximal Surpression<br>
+<img src="checker-corner-1-12-0.4-nms.jpg"></img><br><br>
+
+<h3>Input Values: sigma = 1, nsize = 14, T = 0.6</h3>
+Smoothed Horizontal Gradient<br>
+<img src="checker-corner-1-14-0.6-fgy.jpg"></img><br><br>
+Smoothed Vertical Gradient<br>
+<img src="checker-corner-1-14-0.6-fgx.jpg"></img><br><br>
+Gradient Magnitude<br>
+<img src="checker-corner-1-14-0.6-fgm.jpg"></img><br><br>
+Finding Corners<br>
+<img src="checker-corner-1-14-0.6-fc.jpg"></img><br><br>
+Nonmaximal Surpression<br>
+<img src="checker-corner-1-14-0.6-nms.jpg"></img><br><br>
+
+Using the checkerboard image as an example, I observed how neighborhood size affects corner detection.
+The smaller the neighborhood size is, the more likely multiple corner pixels representing the same corner will be not suppressed.
+The larger the neighborhood size is, the less likely this is to happen.
+This is because a larger neighborhood will cause a wider spread of potential corners to possibly be suppressed.
+One can see how the number of these errors decreases with increased neighborhood size.
+When increasing the neighborhood size, one should increase the threshold amount since when computing the convariance matrix, one will be summing over more pixels.
+<br><br>
+On my honor as a student, I did not give or received any unauthorized aid on this assignment<br>-Tom Crossland
